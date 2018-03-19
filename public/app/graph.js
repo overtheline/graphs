@@ -1,3 +1,5 @@
+import * as d3 from 'd3';
+
 export function d3Graph(selectTarget, graph) {
 	const svg = d3.select(selectTarget);
 	const width = +svg.attr("width");
@@ -8,7 +10,7 @@ export function d3Graph(selectTarget, graph) {
 			.force("link", d3.forceLink().id(function(d) { return d.id; }))
 			.force("charge", d3.forceManyBody())
 			.force("center", d3.forceCenter(width / 2, height / 2))
-			.force("yAxis", d3.forceY(height / 2).strength(0.05));
+			.force("yAxis", d3.forceY(height / 2).strength(0.03));
 
 	const link = svg.append("g")
 			.attr("class", "links")

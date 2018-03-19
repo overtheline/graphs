@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../dist/public/app"
+  },
+  "files": [
+    "index.js"
+  ]
+}

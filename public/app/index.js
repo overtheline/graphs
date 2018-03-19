@@ -1,7 +1,9 @@
-import { treeGenerator } from './js/graphGenerator.js';
-import { getVertex } from './js/vertex.js';
-import { getEdge } from './js/edge.js';
-import { d3Graph } from './js/graph.js';
+import * as d3 from 'd3';
+
+import { treeGenerator } from './graphGenerator.js';
+import { getVertex } from './vertex.js';
+import { getEdge } from './edge.js';
+import { d3Graph } from './graph.js';
 
 const page = d3.select('#page');
 
