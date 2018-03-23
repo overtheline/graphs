@@ -1,7 +1,7 @@
 const random = Math.random;
 const floor = Math.floor;
 
-export function treeGenerator(nVertices) {
+export function treeGenerator(nVertices: number) {
 	let vertices = [];
 
 	// populate vertices randomly
@@ -18,13 +18,13 @@ export function treeGenerator(nVertices) {
 		if (index === 0) {
 			return acc;
 		}
-		
+
 		if (index === 1) {
 			return [[arr[0], v]];
 		}
 
 		// select random edge
-		const re = acc[floor(random() * acc.length)];
+		const re: [number, number] = acc[floor(random() * acc.length)];
 		// select random vertex from edge
 		const rv = random() < 0.5 ? re[0] : re[1];
 
@@ -32,7 +32,7 @@ export function treeGenerator(nVertices) {
 	}, []);
 
 	return {
-		vertices,
 		edges,
+		vertices,
 	};
 }

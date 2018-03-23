@@ -9,7 +9,7 @@ module.exports = {
 		'./public/app/index.js'
 	],
 	plugins: [
-		new CleanWebpackPlugin(['dist']),
+		new CleanWebpackPlugin(['dist/public']),
 		new HtmlWebpackPlugin({
 			title: 'Graphs',
 			inject: 'body',
@@ -23,7 +23,7 @@ module.exports = {
 	],
 	output: {
 		filename: '[name].[chunkhash].js',
-		path: path.resolve(__dirname, 'dist/app'),
+		path: path.resolve(__dirname, 'dist/public'),
 	},
 	module: {
 		rules: [
