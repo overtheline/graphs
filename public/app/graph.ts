@@ -8,7 +8,7 @@ export function d3Graph(selectTarget: string, graph: IGraph): (graph: IGraph) =>
 	const height = +svg.attr('height');
 	const color = d3.scaleOrdinal(d3.schemeCategory10);
 
-	const simulation = d3.forceSimulation<IVertex>()
+	const simulation = d3.forceSimulation()
 			.force('link', d3.forceLink().id((d: IVertex) => `${d.id}`))
 			.force('charge', d3.forceManyBody())
 			.force('center', d3.forceCenter(width / 2, height / 2))
