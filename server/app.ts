@@ -2,7 +2,7 @@ import * as express from 'express';
 import { Application } from 'express-serve-static-core';
 import * as path from 'path';
 
-import { treeGenerator } from './graphGenerator';
+import { treeGenerator } from './utils/graphGenerator';
 
 class App {
 	express: Application;
@@ -19,12 +19,13 @@ class App {
 			res.sendFile(path.join(__dirname, '../public/index.html'));
 		});
 
-		router.get('/tree', (req, res) => {
-			const graph = treeGenerator(Math.floor(Math.random() * 10) + 2);
+		router.get('/tree/k/:branches/n/:vertices', (req, res) => {
+			const { branches, vertices } = req.params;
+			const graph = treeGenerator(branches, vertices);
 
 			res.json({
 				graph,
-				message: 'tree',
+				message: `tree, branches: ${branches}, vertices: ${vertices}`,
 			});
 		});
 
