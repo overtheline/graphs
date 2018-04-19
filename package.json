@@ -10,7 +10,7 @@
     "tsc:server:dev": "tsc --watch --project server/tsconfig.json",
     "server:dev": "nodemon ./dist/server/index.js",
     "start": "npm run build:dev & npm run tsc:server:dev & npm run server:dev",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test:server": "node_modules/.bin/_mocha --project server/tsconfig.json --compilers ts:ts-node/register --full-trace `find ./server -name \"test\" -type d`"
   },
   "repository": {
     "type": "git",
@@ -35,6 +35,7 @@
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "source-map-loader": "^0.2.3",
+    "styled-components": "^3.2.5",
     "ts-loader": "^4.1.0",
     "tslint": "^5.9.1",
     "tslint-react": "^3.5.1",
@@ -42,8 +43,13 @@
     "webpack": "^4.1.1"
   },
   "devDependencies": {
+    "@types/chai": "^4.1.2",
+    "@types/mocha": "^5.0.0",
+    "chai": "^4.1.2",
     "clean-webpack-plugin": "^0.1.19",
     "html-webpack-plugin": "^3.0.6",
+    "mocha": "^5.0.5",
+    "ts-node": "^5.0.1",
     "webpack-cli": "^2.0.12"
   }
 }
