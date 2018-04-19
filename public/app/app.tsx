@@ -133,13 +133,12 @@ export default class App extends React.Component<IProps, IState> {
 		} = this.state;
 
 		return (
-				<Wrapper>
-					<TitleWrapper>
-						<Title>
-							{this.props.title}
-						</Title>
-					</TitleWrapper>
-
+			<Wrapper>
+				<TitleWrapper>
+					<Title>
+						{this.props.title}
+					</Title>
+				</TitleWrapper>
 				<ControlsWrapper>
 					<ControlContainer>
 						<button onClick={this.fetchTree}>
