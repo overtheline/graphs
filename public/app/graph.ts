@@ -1,110 +1,69 @@
 import * as d3 from 'd3';
-import { IGraph } from './processGraph';
-import { IVertex } from './vertex';
+import {
+	IGraph,
+	IGraphUpdater,
+	IVertex,
+} from '../../types';
 
-export function d3Graph(selectTarget: string, graph: IGraph): (graph: IGraph) => void {
-	const svg = d3.select(selectTarget);
-	const width = +svg.attr('width');
-	const height = +svg.attr('height');
-	const color = d3.scaleOrdinal(d3.schemeCategory10);
+export function d3Graph(
+	selectTarget: string,
+	alphaDecay: number,
+	alphaMin: number,
+	alphaTarget: number,
+	velocityDecay: number
+): IGraphUpdater {
+	const svg = d3.select(`#${selectTarget}`);
+	const width = Number(svg.attr('width'));
+	const height = Number(svg.attr('height'));
+	const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
 
-	const simulation = d3.forceSimulation()
-			.force('link', d3.forceLink().id((d: IVertex) => `${d.id}`))
-			.force('charge', d3.forceManyBody())
-			.force('center', d3.forceCenter(width / 2, height / 2))
-			.force('yAxis', d3.forceY(height / 2).strength(0.03));
+	const nodes = [
+		{ id: 666, level: 0 },
+		{ id: 777, level: 1 },
+	];
 
-	let link = svg.append('g')
-			.attr('class', 'links')
-		.selectAll('line')
-		.data(graph.links)
-		.enter().append('line')
-			.attr('stroke-width', (d) => Math.sqrt(d.value));
-
-	let node = svg.append('g')
-			.attr('class', 'nodes')
-		.selectAll('circle')
-		.data(graph.nodes)
+	const node = svg.append('g').selectAll('circle');
+	node.data(nodes)
 		.enter().append('circle')
-			.attr('r', 5)
-			.attr('fill', (d) => color(`${d.group}`))
-			.call(d3.drag()
-					.on('start', dragstarted)
-					.on('drag', dragged)
-					.on('end', dragended));
+			.attr('r', 2.5)
+			.attr('fill', (d: any) => colorScale(d.level));
 
-	node.append('title')
-			.text((d) => d.id);
-
-	simulation
-			.nodes(graph.nodes)
-			.on('tick', ticked);
-
-	simulation
-			.force('link')
-			.links(graph.links);
+	const simulation = d3.forceSimulation<any>(nodes);
+	simulation.alphaMin(alphaMin / 100);
+	simulation.alphaDecay(alphaDecay / 100);
+	simulation.alphaTarget(alphaTarget / 100);
+	simulation.velocityDecay(velocityDecay / 100);
+	simulation.force('charge', d3.forceCollide().radius(5));
+	simulation.force('r', d3.forceRadial((d: any) => d.level * 100));
+	simulation.on('tick', ticked);
 
 	function ticked() {
-		link
-				.attr('x1', (d) => d.source.x)
-				.attr('y1', (d) => d.source.y)
-				.attr('x2', (d) => d.target.x)
-				.attr('y2', (d) => d.target.y);
-
-		node
-				.attr('cx', (d) => d.x)
-				.attr('cy', (d) => d.y);
+		node.attr('cx', (d: any) => d.x)
+				.attr('cy', (d: any) => d.y);
 	}
 
-	function dragstarted(d): void {
-		if (!d3.event.active) {
-			simulation.alphaTarget(0.3).restart();
-		}
-
-		d.fx = d.x;
-		d.fy = d.y;
-	}
-
-	function dragged(d): void {
-		d.fx = d3.event.x;
-		d.fy = d3.event.y;
-	}
-
-	function dragended(d): void {
-		if (!d3.event.active) {
-			simulation.alphaTarget(0);
-		}
-
-		d.fx = null;
-		d.fy = null;
-	}
-
-	return function updateGraph(nextGraph): void {
-		simulation.alphaTarget(0.7).restart();
-
-		link = link.data(nextGraph.links);
-		node = node.data(nextGraph.nodes);
-
-		link
-			.enter().append('line')
-				.attr('stroke-width', (d) => Math.sqrt(d.value))
-			.exit().remove();
-
-		node
-			.enter().append('circle')
-				.attr('r', 5)
-				.attr('fill', (d) => color(`${d.group}`))
-				.call(d3.drag()
-						.on('start', dragstarted)
-						.on('drag', dragged)
-						.on('end', dragended))
-			.exit().remove();
-
-		simulation
-				.nodes(nextGraph.nodes)
-				.on('tick', ticked);
-				
-		simulation.force('link')
-				.links(nextGraph.links);
-	}
+	return {
+		updateGraph(nextGraph: IGraph) {
+			nodes.push({ id: 888, level: 2});
+			node.data(nodes);
+			node.exit().remove();
+			node.enter().append('circle')
+				.attr('r', 2.5)
+				.attr('fill', (d: any) => colorScale(d.level));
+			simulation.nodes(nodes);
+		},
+		updateParams(
+			nextAlphaDecay: number,
+			nextAlphaMin: number,
+			nextAlphaTarget: number,
+			nextVelocityDecay: number
+		) {
+			simulation.alphaMin(nextAlphaMin / 100);
+			simulation.alphaDecay(nextAlphaDecay / 100);
+			simulation.alphaTarget(nextAlphaTarget / 100);
+			simulation.velocityDecay(nextVelocityDecay / 100);
+			simulation.restart();
+			simulation.alpha(1);
+		},
+	};
 }
