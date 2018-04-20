@@ -23,3 +23,19 @@ export interface IGraphUpdater {
 		velocityDecay: number
 	) => void;
 }
+
+export interface INode {
+	id: string;
+	group: number;
+}
+
+export interface ILink {
+	source: string;
+	target: string;
+	value: number;
+}
+
+export interface ID3Graph {
+	nodes: INode[];
+	links: ILink[];
+}

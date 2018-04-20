@@ -5,6 +5,9 @@ import {
 	IGraph,
 	IVertex,
 } from '../../types';
+import { reshapeGraph } from '../../utils/reshapeGraph';
+import { uniqId } from '../../utils/uniqId';
+import D3Graph from './graph';
 
 interface IProps {
 	title: string;
@@ -16,37 +19,39 @@ interface IState {
 	alphaMin: number;
 	alphaTarget: number;
 	branches: number;
+	graphId: string;
 	velocityDecay: number;
 	vertices: number;
 }
 
-const graphId = 'graph-svg';
 const Wrapper = styled.div`
-	display: grid;
-	grid-template-columns: repeat(8, 1fr);
-	grid-template-rows: repeat(5, 1fr);
+display: grid;
+grid-template-columns: repeat(8, 1fr);
+grid-template-rows: repeat(5, 1fr);
 `;
 const Title = styled.h1`
-	font-size: 1.5em;
-	text-align: center;
+font-size: 1.5em;
+text-align: center;
 `;
 const TitleWrapper = styled.section`
-  padding: 1em;
-	background: #DDD;
-	grid-column: 1 / 9;
-	grid-row: 1;
+padding: 1em;
+background: #DDD;
+grid-column: 1 / 9;
+grid-row: 1;
 `;
 const ControlsWrapper = styled.div`
-	grid-column: 1 / 3;
-	grid-row: 2 / 6;
+grid-column: 1 / 3;
+grid-row: 2 / 6;
 `;
 const ControlContainer = styled.div`
-	padding: 5px 10px;
+padding: 5px 10px;
 `;
 const ViewWrapper = styled.div`
-	grid-column: 3 / 9;
-	grid-row: 2 / 6;
+grid-column: 3 / 9;
+grid-row: 2 / 6;
 `;
+
+const nextGraphId = uniqId('graph-svg-');
 
 const initialAlphaDecay = 2;
 const initialAlphaMin = 1;
@@ -54,8 +59,13 @@ const initialAlphaTarget = 0;
 const initialBranches = 3;
 const initialVelocityDecay = 40;
 const initialVertices = 12;
+const initialGraphId = nextGraphId();
+const initialHeight = 500;
+const initialWidth = 800;
 
 export default class App extends React.Component<IProps, IState> {
+	d3Graph: D3Graph;
+
 	constructor(props: IProps) {
 		super(props);
 
@@ -64,6 +74,7 @@ export default class App extends React.Component<IProps, IState> {
 			alphaMin: initialAlphaMin,
 			alphaTarget: initialAlphaTarget,
 			branches: initialBranches,
+			graphId: initialGraphId,
 			velocityDecay: initialVelocityDecay,
 			vertices: initialVertices,
 		};
@@ -88,6 +99,19 @@ export default class App extends React.Component<IProps, IState> {
 			.then((myJson) => {
 				this.setState({
 					graph: myJson.graph,
+					graphId: nextGraphId(),
+				}, () => {
+					this.d3Graph = new D3Graph({
+						selectTarget: this.state.graphId,
+						targetHeight: initialHeight,
+						targetWidth: initialWidth,
+					});
+
+					if (this.state.graph) {
+						this.d3Graph.updateGraph(reshapeGraph(this.state.graph));
+					} else {
+						console.error('no graph!');
+					}
 				});
 			});
 	}
@@ -128,6 +152,7 @@ export default class App extends React.Component<IProps, IState> {
 			alphaMin,
 			alphaTarget,
 			branches,
+			graphId,
 			velocityDecay,
 			vertices,
 		} = this.state;
@@ -221,8 +246,9 @@ export default class App extends React.Component<IProps, IState> {
 				<ViewWrapper>
 					<svg
 						id={graphId}
-						height="200"
-						width="300"
+						height={initialHeight}
+						width={initialWidth}
+						viewBox={`${-initialWidth / 2} ${-initialHeight / 2} ${initialWidth} ${initialHeight}`}
 					/>
 				</ViewWrapper>
 			</Wrapper>

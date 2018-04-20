@@ -1,69 +1,128 @@
 import * as d3 from 'd3';
 import {
+	SimulationLinkDatum,
+	SimulationNodeDatum,
+} from 'd3';
+
+import {
 	IGraph,
 	IGraphUpdater,
 	IVertex,
 } from '../../types';
 
-export function d3Graph(
-	selectTarget: string,
-	alphaDecay: number,
-	alphaMin: number,
-	alphaTarget: number,
-	velocityDecay: number
-): IGraphUpdater {
-	const svg = d3.select(`#${selectTarget}`);
-	const width = Number(svg.attr('width'));
-	const height = Number(svg.attr('height'));
-	const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+type Vertex = IVertex & SimulationNodeDatum;
 
-	const nodes = [
-		{ id: 666, level: 0 },
-		{ id: 777, level: 1 },
-	];
+const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
 
-	const node = svg.append('g').selectAll('circle');
-	node.data(nodes)
-		.enter().append('circle')
-			.attr('r', 2.5)
-			.attr('fill', (d: any) => colorScale(d.level));
+export interface IState {
+	alphaDecay?: number;
+	alphaMin?: number;
+	alphaTarget?: number;
+	selectTarget: string;
+	targetHeight: number;
+	targetWidth: number;
+	velocityDecay?: number;
+}
 
-	const simulation = d3.forceSimulation<any>(nodes);
-	simulation.alphaMin(alphaMin / 100);
-	simulation.alphaDecay(alphaDecay / 100);
-	simulation.alphaTarget(alphaTarget / 100);
-	simulation.velocityDecay(velocityDecay / 100);
-	simulation.force('charge', d3.forceCollide().radius(5));
-	simulation.force('r', d3.forceRadial((d: any) => d.level * 100));
-	simulation.on('tick', ticked);
+export default class D3Graph {
+	colorScale: d3.ScaleOrdinal<any, any>;
+	height: number;
+	simulation: d3.Simulation<any, any>;
+	svg: d3.Selection<SVGSVGElement, any, any, any>;
+	width: number;
 
-	function ticked() {
-		node.attr('cx', (d: any) => d.x)
-				.attr('cy', (d: any) => d.y);
+	constructor(state: IState) {
+		const {
+			selectTarget,
+			targetHeight,
+			targetWidth,
+		} = state;
+
+		this.svg = d3.select(`#${selectTarget}`);
+		this.height = targetHeight;
+		this.width = targetWidth;
+		this.colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+		this.simulation = d3.forceSimulation()
+				.force('link', d3.forceLink().id(({ id }) => id))
+				.force('charge', d3.forceCollide().radius(5))
+				.force('r', d3.forceRadial((d: any) => d.group * 50));
+
+		this.dragended = this.dragended.bind(this);
+		this.dragged = this.dragged.bind(this);
+		this.dragstarted = this.dragstarted.bind(this);
 	}
 
-	return {
-		updateGraph(nextGraph: IGraph) {
-			nodes.push({ id: 888, level: 2});
-			node.data(nodes);
-			node.exit().remove();
-			node.enter().append('circle')
-				.attr('r', 2.5)
-				.attr('fill', (d: any) => colorScale(d.level));
-			simulation.nodes(nodes);
-		},
-		updateParams(
-			nextAlphaDecay: number,
-			nextAlphaMin: number,
-			nextAlphaTarget: number,
-			nextVelocityDecay: number
-		) {
-			simulation.alphaMin(nextAlphaMin / 100);
-			simulation.alphaDecay(nextAlphaDecay / 100);
-			simulation.alphaTarget(nextAlphaTarget / 100);
-			simulation.velocityDecay(nextVelocityDecay / 100);
-			simulation.restart();
-			simulation.alpha(1);
-		},
-	};
+	updateGraph(graph: any) {
+		const {
+			simulation,
+			svg,
+		} = this;
+
+		svg.select('.links').remove();
+		svg.select('.nodes').remove();
+
+		const link = svg.append('g')
+				.attr('class', 'links')
+			.selectAll('line')
+			.data(graph.links)
+			.enter().append('line')
+				.attr('stroke-width', ({ value }: any) => Math.sqrt(value));
+
+		const node = svg.append('g')
+				.attr('class', 'nodes')
+			.selectAll('circle')
+			.data(graph.nodes)
+			.enter().append('circle')
+				.attr('r', 5)
+				.attr('fill', ({ group }: any) => colorScale(group))
+				.call(d3.drag()
+					.on('start', this.dragstarted)
+					.on('drag', this.dragged)
+					.on('end', this.dragended));
+
+		simulation
+			.nodes(graph.nodes)
+			.on('tick', ticked);
+
+		const linkForce: d3.ForceLink<any, any> | undefined = simulation.force('link');
+
+		if (linkForce) {
+			linkForce.links(graph.links);
+		}
+
+		function ticked() {
+			link
+					.attr('x1', ({ source }: any) => source.x)
+					.attr('y1', ({ source }: any) => source.y)
+					.attr('x2', ({ target }: any) => target.x)
+					.attr('y2', ({ target }: any) => target.y);
+
+			node
+					.attr('cx', ({ x }) => x)
+					.attr('cy', ({ y }) => y);
+		}
+	}
+
+	dragstarted(d: any) {
+		if (!d3.event.active) {
+			this.simulation.alphaTarget(0.3).restart();
+		}
+
+		d.fx = d.x;
+		d.fy = d.y;
+	}
+
+	dragged(d: any) {
+		d.fx = d3.event.x;
+		d.fy = d3.event.y;
+	}
+
+	dragended(d: any) {
+		if (!d3.event.active) {
+			this.simulation.alphaTarget(0);
+		}
+
+		d.fx = null;
+		d.fy = null;
+	}
 }

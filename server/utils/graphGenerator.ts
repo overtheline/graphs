@@ -3,14 +3,14 @@ import {
 	IVertex,
 	IVertexMap,
 } from '../../types';
-import { uniqId } from './uniqId';
+import { uniqId } from '../../utils/uniqId';
 
 const nextId = uniqId();
 const random = Math.random;
 const floor = Math.floor;
 
 function nextValue() {
-	return floor(random() * 99) + 1;
+	return floor(random() * 9) + 1;
 }
 
 export function generateVertices(n: number): IVertex[] {
