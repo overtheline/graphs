@@ -39,3 +39,9 @@ export interface ID3Graph {
 	nodes: INode[];
 	links: ILink[];
 }
+
+export interface ITask {
+	assignee: any;
+	completed: boolean;
+	task: string;
+}

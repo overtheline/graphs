@@ -43,9 +43,9 @@ export default class D3Graph {
 		this.width = targetWidth;
 		this.colorScale = d3.scaleOrdinal(d3.schemeCategory10);
 		this.simulation = d3.forceSimulation()
-				.force('link', d3.forceLink().id(({ id }) => id))
-				.force('charge', d3.forceCollide().radius(5))
-				.force('r', d3.forceRadial((d: any) => d.group * 50));
+				.force('link', d3.forceLink().id(({ id }) => id).strength(0.4))
+				.force('charge', d3.forceCollide().radius(10))
+				.force('r', d3.forceRadial((d: any) => d.group * 60));
 
 		this.dragended = this.dragended.bind(this);
 		this.dragged = this.dragged.bind(this);

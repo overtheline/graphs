@@ -8,6 +8,8 @@ import {
 import { reshapeGraph } from '../../utils/reshapeGraph';
 import { uniqId } from '../../utils/uniqId';
 import D3Graph from './graph';
+import { TodoList } from './todo-list';
+import { ObservableTodoStore } from './todo-store';
 
 interface IProps {
 	title: string;
@@ -40,14 +42,18 @@ grid-column: 1 / 9;
 grid-row: 1;
 `;
 const ControlsWrapper = styled.div`
-grid-column: 1 / 3;
+grid-column: 1 / 2;
 grid-row: 2 / 6;
 `;
 const ControlContainer = styled.div`
 padding: 5px 10px;
 `;
 const ViewWrapper = styled.div`
-grid-column: 3 / 9;
+grid-column: 2 / 7;
+grid-row: 2 / 6;
+`;
+const TodoWrapper = styled.div`
+grid-column: 7 / 9;
 grid-row: 2 / 6;
 `;
 
@@ -61,10 +67,11 @@ const initialVelocityDecay = 40;
 const initialVertices = 12;
 const initialGraphId = nextGraphId();
 const initialHeight = 500;
-const initialWidth = 800;
+const initialWidth = 500;
 
 export default class App extends React.Component<IProps, IState> {
 	d3Graph: D3Graph;
+	observableTodoStore: ObservableTodoStore;
 
 	constructor(props: IProps) {
 		super(props);
@@ -78,6 +85,8 @@ export default class App extends React.Component<IProps, IState> {
 			velocityDecay: initialVelocityDecay,
 			vertices: initialVertices,
 		};
+
+		this.observableTodoStore = new ObservableTodoStore();
 
 		this.fetchTree = this.fetchTree.bind(this);
 		this.alphaMinSlider = this.alphaMinSlider.bind(this);
@@ -187,7 +196,7 @@ export default class App extends React.Component<IProps, IState> {
 						<input
 							type="range"
 							min="2"
-							max="100"
+							max="1000"
 							value={vertices}
 							className="slider"
 							id="vertices-slider"
@@ -251,6 +260,9 @@ export default class App extends React.Component<IProps, IState> {
 						viewBox={`${-initialWidth / 2} ${-initialHeight / 2} ${initialWidth} ${initialHeight}`}
 					/>
 				</ViewWrapper>
+				<TodoWrapper>
+					<TodoList store={this.observableTodoStore} />
+				</TodoWrapper>
 			</Wrapper>
 		);
 	}
